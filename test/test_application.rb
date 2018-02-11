@@ -1,6 +1,27 @@
 require_relative "test_helper"
 
+module Rulers
+  class Controller
+    def render(view_name, locals = {})
+      `echo "I am view. Variable <%= foo %>" > test.rb`
+      template = File.read 'test.rb'
+      `rm test.rb`
+      eruby = Erubis::Eruby.new(template)
+      eruby.result(locals.merge(env: env))
+    end
+  end
+end
+
+class TestController < Rulers::Controller
+  def index
+    render 'test.rb', { foo: "Hello" }
+  end
+end
+
 class TestApp < Rulers::Application
+  def get_controller_and_action(env)
+    [TestController, "index"]
+  end
 end
 
 class RulersAppTest < Test::Unit::TestCase
@@ -10,21 +31,11 @@ class RulersAppTest < Test::Unit::TestCase
     TestApp.new
   end
 
-  # Exercise 3
   def test_request
-    get "/"
+    get "/example/route"
 
     assert last_response.ok?
     body = last_response.body
     assert body ["Hello"]
-  end
-
-  # Extra exercise
-  def sunglasses
-    post "/sunglasses"
-
-    assert_equal last_response.status, 200
-    assert last_response.header['Content-Type'], 'text/html'
-    assert last_response.body, '😎'
   end
 end
