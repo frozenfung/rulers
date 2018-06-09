@@ -20,15 +20,21 @@ module Rulers
           return true
         end
 
-        fields = @hash.map do |k, v|
-          "#{k}=#{self.class.to_sql(v)}"
-        end.join ","
+        fields = @hash.map { |k, _| k }.join ","
+        values = @hash.map { |_, v| "\"#{v.to_s}\"" }.join ","
 
+        # sql = "UPDATE #{self.class.table} SET #{fields} WHERE id = #{@hash["id"]}"
+       # DB.execute(sql)
+      #
+        # puts fields
+        # puts values
+        #
         DB.execute <<SQL
 UPDATE #{self.class.table}
-SET #{fields}
+SET (#{fields}) = (#{values})
 WHERE id = #{@hash["id"]}
 SQL
+
         true
       end
 
@@ -47,6 +53,12 @@ SQL
 
         @schema
       end
+
+      # schema.keys.each do |key|
+      #   define_method(key) do
+      #     @hash[key.to_s]
+      #   end
+      # end
 
       def self.to_sql(val)
         case val
@@ -73,7 +85,6 @@ SQL
       end
 
       def []=(name, value)
-        puts @hash
         @hash[name.to_s] = value
       end
 
