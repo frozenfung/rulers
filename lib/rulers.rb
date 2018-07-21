@@ -14,9 +14,11 @@ module Rulers
       end
 
       klass, act = get_controller_and_action(env)
-      controller = klass.new(env)
-      text = controller.send(act)
-      [200, {'Content-Type' => 'text/html'}, [text]]
+      rack_app = klass.action(act)
+      rack_app.call(env)
+      # controller = klass.new(env)
+      # text = controller.send(act)
+      # [200, {'Content-Type' => 'text/html'}, [text]]
     end
   end
 end
